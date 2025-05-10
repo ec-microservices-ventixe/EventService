@@ -1,0 +1,15 @@
+@WebApi_HostAddress = https://localhost:7266
+
+POST {{WebApi_HostAddress}}/events
+Accept: application/json
+Content-Type: application/json
+
+{
+  "name": "rock",
+  "description": "rock event"
+}
+
+###
+
+GET {{WebApi_HostAddress}}/events/
+Accept: application/json
