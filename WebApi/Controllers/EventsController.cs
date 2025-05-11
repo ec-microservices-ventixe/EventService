@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using WebApi.Data.Context;
@@ -13,6 +14,7 @@ public class EventsController(ApplicationDbContext context) : Controller
     private readonly ApplicationDbContext _context = context;
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public IActionResult Create([FromBody] EventEntity entity) {
         if(!ModelState.IsValid) return BadRequest(entity);
 
