@@ -32,6 +32,7 @@ public class EventsController(ApplicationDbContext context) : Controller
         
     }
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> Index()
     {
         var events = await _context.Set<EventEntity>().ToListAsync();

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Cryptography;
 using System.Text;
 using WebApi.Data.Context;
 
@@ -11,23 +12,46 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("EventDbConnection"));
 });
-
 builder.Services.AddAuthorization();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
     .AddJwtBearer(options =>
     {
-        var secretKey = builder.Configuration["Jwt:SecretKey"];
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+        string publicKeyPem = File.ReadAllText("/Users/Emanuel/public_key.pem")
+            .Replace("-----BEGIN PUBLIC KEY-----", "")
+            .Replace("-----END PUBLIC KEY-----", "");
+
+        byte[] publicKeyRaw = Convert.FromBase64String(publicKeyPem);
+
+        var rsa = RSA.Create();
+        rsa.ImportSubjectPublicKeyInfo(publicKeyRaw, out _);
+        var key = new RsaSecurityKey(rsa);
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
             IssuerSigningKey = key,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
-            ValidateIssuerSigningKey = true,
-            ValidateLifetime = true,
+            ValidateIssuerSigningKey = false,
+            ValidateLifetime = false,
             ValidateIssuer = false,
             ValidateAudience = false
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine("Authentication failed: " + context.Exception.Message);
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                Console.WriteLine("Token is valid");
+                return Task.CompletedTask;
+            }
         };
     });
 
