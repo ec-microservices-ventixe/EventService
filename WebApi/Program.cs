@@ -20,36 +20,27 @@ builder.Services.AddAuthentication(options =>
     })
     .AddJwtBearer(options =>
     {
-        string publicKeyPem = File.ReadAllText("/Users/Emanuel/public_key.pem")
-            .Replace("-----BEGIN PUBLIC KEY-----", "")
-            .Replace("-----END PUBLIC KEY-----", "");
-
-        byte[] publicKeyRaw = Convert.FromBase64String(publicKeyPem);
-
-        var rsa = RSA.Create();
-        rsa.ImportSubjectPublicKeyInfo(publicKeyRaw, out _);
-        var key = new RsaSecurityKey(rsa);
-
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            IssuerSigningKey = key,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
-            ValidateIssuerSigningKey = false,
+            ValidateIssuerSigningKey = true,
             ValidateLifetime = false,
             ValidateIssuer = false,
-            ValidateAudience = false
+            ValidateAudience = false,
+            IssuerSigningKeyResolver = (token, SecurityKey, kid, validationParameters) =>
+            {
+                using HttpClient httpClient = new();
+                string jwksJson = httpClient.GetStringAsync(builder.Configuration["Jwt:jwksUrl"]).Result;
+                var jwks = new JsonWebKeySet(jwksJson);
+                return jwks.Keys.Where(k => k.Kid == kid).ToList();
+            }
         };
         options.Events = new JwtBearerEvents
         {
             OnAuthenticationFailed = context =>
             {
-                Console.WriteLine("Authentication failed: " + context.Exception.Message);
-                return Task.CompletedTask;
-            },
-            OnTokenValidated = context =>
-            {
-                Console.WriteLine("Token is valid");
+                Console.WriteLine($"Authentication failed: {context.Exception.Message}");
                 return Task.CompletedTask;
             }
         };
