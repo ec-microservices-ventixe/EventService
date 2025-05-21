@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using WebApi.Data.Context;
+using WebApi.Interfaces;
+using WebApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("sqlConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("db"));
 });
 builder.Services.AddCors(options =>
 {
@@ -16,8 +18,7 @@ builder.Services.AddCors(options =>
         policy
             .WithOrigins("*")
             .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials(); 
+            .AllowAnyMethod();
     });
 });
 builder.Services.AddAuthorization();
@@ -54,11 +55,24 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
+builder.Services.AddScoped<IFileService, AzureFilesService>();
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 var app = builder.Build();
 app.MapOpenApi();
+
+app.UseSwagger();                              
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+    options.RoutePrefix = string.Empty;       
+});
+
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthentication();
