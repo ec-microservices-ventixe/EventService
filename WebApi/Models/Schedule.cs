@@ -2,5 +2,8 @@
 
 public class Schedule
 {
-    public IEnumerable<ScheduleSlot> Slots { get; set; } = [];
+    public int Id { get; set; }
+
+    public int EventId { get; set; }
+    public IEnumerable<ScheduleSlot> ScheduleSlots { get; set; } = [];
 }

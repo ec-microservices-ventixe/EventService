@@ -10,9 +10,9 @@ public class EventScheduleEntity
     [Key]
     public int Id { get; set; }
 
-    [ForeignKey(nameof(EventId))]
-    public EventEntity Event { get; set; } = null!;
     public int EventId { get; set; }
+
+    public EventEntity Event { get; set; } = null!;
 
     public ICollection<ScheduleSlotEntity> ScheduleSlots { get; set; } = [];
 }

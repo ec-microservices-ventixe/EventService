@@ -2,5 +2,5 @@
 
 public class ScheduleForm
 {
-    public IEnumerable<ScheduleSlotForm> Slots { get; set; } = [];
+    public int EventId { get; set; }
 }

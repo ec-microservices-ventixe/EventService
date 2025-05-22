@@ -47,7 +47,7 @@ namespace WebApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CategoryId")
+                    b.Property<int?>("CategoryId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Date")
@@ -59,9 +59,6 @@ namespace WebApi.Migrations
 
                     b.Property<TimeOnly>("EndTime")
                         .HasColumnType("time");
-
-                    b.Property<int?>("EventCategoryEntityId")
-                        .HasColumnType("int");
 
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
@@ -75,9 +72,9 @@ namespace WebApi.Migrations
                         .HasColumnType("varchar(60)");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("money");
 
-                    b.Property<int>("ScheduleId")
+                    b.Property<int?>("ScheduleId")
                         .HasColumnType("int");
 
                     b.Property<TimeOnly>("StartTime")
@@ -89,8 +86,6 @@ namespace WebApi.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
-
-                    b.HasIndex("EventCategoryEntityId");
 
                     b.ToTable("Events");
                 });
@@ -145,14 +140,9 @@ namespace WebApi.Migrations
             modelBuilder.Entity("WebApi.Data.Entities.EventEntity", b =>
                 {
                     b.HasOne("WebApi.Data.Entities.EventCategoryEntity", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("WebApi.Data.Entities.EventCategoryEntity", null)
                         .WithMany("Events")
-                        .HasForeignKey("EventCategoryEntityId");
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Category");
                 });

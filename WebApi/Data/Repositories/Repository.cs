@@ -2,9 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Linq.Expressions;
-using System.Linq;
 using WebApi.Data.Context;
-using WebApi.Interfaces;
+using WebApi.Data.Interfaces;
 
 namespace WebApi.Data.Repositories;
 
@@ -14,21 +13,21 @@ public abstract class Repository<TEntity>(ApplicationDbContext context) : IRepos
     private readonly DbSet<TEntity> _table = context.Set<TEntity>();
     private IDbContextTransaction _transaction = null!;
 
-    public virtual async Task<bool> CreateAsync(TEntity entity)
+    public virtual async Task<TEntity> CreateAsync(TEntity entity)
     {
-        if (entity == null) return false;
+        if (entity == null) return null!; ;
 
         try
         {
             await _table.AddAsync(entity);
             await _context.SaveChangesAsync();
 
-            return true;
+            return entity;
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Error creating {nameof(TEntity)} entity :: {ex.Message}");
-            return false;
+            return null!;
         }
     }
 
@@ -66,20 +65,20 @@ public abstract class Repository<TEntity>(ApplicationDbContext context) : IRepos
         return entity ?? null!;
     }
 
-    public virtual async Task<bool> UpdateAsync(TEntity entity)
+    public virtual async Task<TEntity> UpdateAsync(TEntity entity)
     {
-        if (entity == null) return false;
+        if (entity is null) return null!;
         try
         {
             _table.Update(entity);
             await _context.SaveChangesAsync();
 
-            return true;
+            return entity;
         }
         catch (Exception ex)
         {
             Debug.WriteLine($"Error Updating {nameof(TEntity)} entity: {ex.Message}");
-            return false;
+            return null!;
         }
     }
 

@@ -1,6 +1,6 @@
 ﻿using WebApi.Data.Context;
 using WebApi.Data.Entities;
-using WebApi.Interfaces;
+using WebApi.Data.Interfaces;
 
 namespace WebApi.Data.Repositories;
 

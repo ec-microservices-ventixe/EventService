@@ -6,21 +6,21 @@ using WebApi.Models;
 namespace WebApi.Controllers;
 
 [ApiController]
-[Route("events")]
-public class EventsController(IEventService eventService) : Controller
+[Route("schedule-slots")]
+public class ScheduleSlotsController(IScheduleSlotService scheduleSlotService) : Controller
 {
-   private readonly IEventService _eventService = eventService;
-
+    private readonly IScheduleSlotService _scheduleSlotService = scheduleSlotService;
     [HttpPost]
-    public async Task<ActionResult> Create([FromBody] EventForm form)
+    public async Task<ActionResult> Create([FromBody] ScheduleSlotForm form)
     {
         if (!ModelState.IsValid) return BadRequest(form);
         try
         {
-            var result = await _eventService.CreateAsync(form);
-            if(result.Success == false) return StatusCode(result.StatusCode, result.ErrorMessage);
+            var result = await _scheduleSlotService.CreateAsync(form);
+            if (result.Success == false) return StatusCode(result.StatusCode, result.ErrorMessage);
             return StatusCode(result.StatusCode, result.Data);
-        } catch(Exception ex)
+        }
+        catch (Exception ex)
         {
             Debug.WriteLine(ex);
             return StatusCode(500, "Internal Server Error");
@@ -31,7 +31,7 @@ public class EventsController(IEventService eventService) : Controller
     {
         try
         {
-            var result = await _eventService.GetAllAsync();
+            var result = await _scheduleSlotService.GetAllAsync();
             if (result.Success == false) return StatusCode(result.StatusCode, result.ErrorMessage);
             return StatusCode(result.StatusCode, result.Data);
         }
@@ -42,11 +42,11 @@ public class EventsController(IEventService eventService) : Controller
         }
     }
     [HttpGet("{id}")]
-    public async Task<ActionResult> Get(int id)
+    public async Task<ActionResult> Get([FromQuery] int id)
     {
         try
         {
-            var result = await _eventService.GetAsync(id);
+            var result = await _scheduleSlotService.GetAsync(id);
             if (result.Success == false) return StatusCode(result.StatusCode, result.ErrorMessage);
             return StatusCode(result.StatusCode, result.Data);
         }
@@ -57,11 +57,11 @@ public class EventsController(IEventService eventService) : Controller
         }
     }
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(int id, [FromBody] EventForm form)
+    public async Task<ActionResult> Update([FromQuery] int id, [FromBody] ScheduleSlotForm form)
     {
         try
         {
-            var result = await _eventService.UpdateAsync(id, form);
+            var result = await _scheduleSlotService.UpdateAsync(id, form);
             if (result.Success == false) return StatusCode(result.StatusCode, result.ErrorMessage);
             return NoContent();
         }
@@ -72,19 +72,18 @@ public class EventsController(IEventService eventService) : Controller
         }
     }
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(int id)
+    public async Task<ActionResult> Delete([FromQuery] int id)
     {
         try
         {
-            var result = await _eventService.DeleteAsync(id);
+            var result = await _scheduleSlotService.DeleteAsync(id);
             if (result.Success == false) return StatusCode(result.StatusCode, result.ErrorMessage);
             return StatusCode(result.StatusCode, result.Data);
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex);
-            return NoContent();
+            return StatusCode(500, "Internal Server Error");
         }
     }
-
 }

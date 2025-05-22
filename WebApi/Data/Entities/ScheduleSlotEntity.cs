@@ -17,7 +17,7 @@ public class ScheduleSlotEntity
 
     public TimeOnly EndTime { get; set; }
 
-    [ForeignKey(nameof(ScheduleId))]
-    public EventScheduleEntity Schedule { get; set; } = null!;
     public int ScheduleId { get; set; }
+
+    public EventScheduleEntity Schedule { get; set; } = null!;
 }

@@ -32,16 +32,16 @@ public class EventEntity
 
     public int TotalTickets { get; set; }
 
+    [Column(TypeName = "money")]
     public decimal Price { get; set; }
 
-    [ForeignKey(nameof(ScheduleId))]
+    public int? ScheduleId { get; set; }
+
     public EventScheduleEntity? Schedule { get; set; }
 
-    public int ScheduleId {get; set;}
+    public int? CategoryId { get; set; }
 
-
-    [ForeignKey(nameof(CategoryId))]
     public EventCategoryEntity? Category { get; set; } 
 
-    public int CategoryId { get; set; }
+    
 }

@@ -2,7 +2,9 @@
 
 public class EventForm
 {
-    public IFormFile? EventImageFile { get; set; }
+    public IFormFile? ImageFile { get; set; }
+
+    public string? ImageUrl { get; set; }
 
     public string Name { get; set; } = null!;
 

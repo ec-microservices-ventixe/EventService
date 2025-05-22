@@ -2,25 +2,26 @@
 using System.Diagnostics;
 using WebApi.Interfaces;
 using WebApi.Models;
+using WebApi.Services;
 
 namespace WebApi.Controllers;
 
 [ApiController]
-[Route("events")]
-public class EventsController(IEventService eventService) : Controller
+[Route("categories")]
+public class CategoriesController(ICategoryService categoryService) : Controller
 {
-   private readonly IEventService _eventService = eventService;
-
+    private readonly ICategoryService _categoryService = categoryService;
     [HttpPost]
-    public async Task<ActionResult> Create([FromBody] EventForm form)
+    public async Task<ActionResult> Create(CategoryForm form)
     {
         if (!ModelState.IsValid) return BadRequest(form);
         try
         {
-            var result = await _eventService.CreateAsync(form);
-            if(result.Success == false) return StatusCode(result.StatusCode, result.ErrorMessage);
+            var result = await _categoryService.CreateAsync(form);
+            if (result.Success == false) return StatusCode(result.StatusCode, result.ErrorMessage);
             return StatusCode(result.StatusCode, result.Data);
-        } catch(Exception ex)
+        }
+        catch (Exception ex)
         {
             Debug.WriteLine(ex);
             return StatusCode(500, "Internal Server Error");
@@ -31,7 +32,7 @@ public class EventsController(IEventService eventService) : Controller
     {
         try
         {
-            var result = await _eventService.GetAllAsync();
+            var result = await _categoryService.GetAllAsync();
             if (result.Success == false) return StatusCode(result.StatusCode, result.ErrorMessage);
             return StatusCode(result.StatusCode, result.Data);
         }
@@ -46,7 +47,7 @@ public class EventsController(IEventService eventService) : Controller
     {
         try
         {
-            var result = await _eventService.GetAsync(id);
+            var result = await _categoryService.GetAsync(id);
             if (result.Success == false) return StatusCode(result.StatusCode, result.ErrorMessage);
             return StatusCode(result.StatusCode, result.Data);
         }
@@ -57,13 +58,13 @@ public class EventsController(IEventService eventService) : Controller
         }
     }
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(int id, [FromBody] EventForm form)
+    public async Task<ActionResult> Update(int id, [FromBody] CategoryForm form)
     {
         try
         {
-            var result = await _eventService.UpdateAsync(id, form);
+            var result = await _categoryService.UpdateAsync(id, form);
             if (result.Success == false) return StatusCode(result.StatusCode, result.ErrorMessage);
-            return NoContent();
+            return StatusCode(result.StatusCode, result.Data);
         }
         catch (Exception ex)
         {
@@ -76,15 +77,14 @@ public class EventsController(IEventService eventService) : Controller
     {
         try
         {
-            var result = await _eventService.DeleteAsync(id);
+            var result = await _categoryService.DeleteAsync(id);
             if (result.Success == false) return StatusCode(result.StatusCode, result.ErrorMessage);
-            return StatusCode(result.StatusCode, result.Data);
+            return NoContent();
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex);
-            return NoContent();
+            return StatusCode(500, "Internal Server Error");
         }
     }
-
 }

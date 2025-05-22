@@ -17,7 +17,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         modelBuilder.Entity<EventEntity>()
         .HasOne(e => e.Category)
-        .WithMany()
+        .WithMany( c => c.Events)
         .HasForeignKey(e => e.CategoryId)
         .OnDelete(DeleteBehavior.Restrict);
 

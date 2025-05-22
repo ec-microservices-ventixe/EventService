@@ -1,30 +1,44 @@
 ﻿using System.Diagnostics;
 using WebApi.Data.Entities;
+using WebApi.Data.Interfaces;
 using WebApi.Extensions;
 using WebApi.Interfaces;
 using WebApi.Models;
 
 namespace WebApi.Services;
 
-public class EventService(IEventRepository eventRepository) : IEventService
+public class EventService(IEventRepository eventRepository, IFileService fileService, IEventCategoryRepository categoryRepository) : IEventService
 {
     private readonly IEventRepository _eventRepository = eventRepository;
-    public async Task<ServiceResult<bool>> CreateAsync(EventForm form)
+    private readonly IFileService _fileService = fileService;
+    private readonly IEventCategoryRepository _categoryRepository = categoryRepository;
+    public async Task<ServiceResult<Event>> CreateAsync(EventForm form)
     {
         try
         {
             var alreadyExist = await _eventRepository.GetAsync(findBy: x => x.Name == form.Name);
-            if(alreadyExist != null) ServiceResult<bool>.Conflict("An event with that name already exists");
+            if(alreadyExist != null) return ServiceResult<Event>.Conflict("An event with that name already exists");
 
-            bool result = await _eventRepository.CreateAsync(form.MapTo<EventEntity>());
-            if (result == false) ServiceResult<bool>.Error("Failed to create event");
+            if(form.ImageFile is not null)
+                form.ImageUrl = await _fileService.UploadFileAsync(form.ImageFile);
 
-            return ServiceResult<bool>.Ok();
+            var mappedForm = form.MapTo<EventEntity>();
+            if (form.CategoryId != 0)
+            {
+                var category = await _categoryRepository.GetAsync(findBy: x => x.Id == form.CategoryId);
+                if (category is null) return ServiceResult<Event>.BadRequest("category not found");
+                mappedForm.Category = category;
+            }
+
+            var createdEntity = await _eventRepository.CreateAsync(mappedForm);
+            if (createdEntity is null) return ServiceResult<Event>.Error("Failed to create event");
+
+            return ServiceResult<Event>.Ok(createdEntity.MapTo<Event>());
 
         } catch (Exception ex)
         {
             Debug.WriteLine(ex.Message);
-            return ServiceResult<bool>.Error("Failed to create event");
+            return ServiceResult<Event>.Error("Failed to create event");
         }
     }
 
@@ -33,7 +47,7 @@ public class EventService(IEventRepository eventRepository) : IEventService
         try
         {
             var entity = await _eventRepository.GetAsync(findBy: x => x.Id == id);
-            if (entity == null) ServiceResult<bool>.BadRequest("Event not found");
+            if (entity is null) return ServiceResult<bool>.BadRequest("Event not found");
 
             bool result = await _eventRepository.DeleteAsync(entity);
             if (result == false) ServiceResult<bool>.Error("Failed to delete event");
@@ -52,7 +66,13 @@ public class EventService(IEventRepository eventRepository) : IEventService
         try
         {
             var entities = await _eventRepository.GetAllAsync();
-            return ServiceResult<IEnumerable<Event>>.Ok(entities.Select(x => x.MapTo<Event>()));
+            return ServiceResult<IEnumerable<Event>>.Ok(entities.Select(x =>
+            {
+                var eventMapped = x.MapTo<Event>();
+                if (x.Schedule is not null && x.Schedule.ScheduleSlots is not null && eventMapped.Schedule is not null)
+                    eventMapped.Schedule.ScheduleSlots = x.Schedule.ScheduleSlots.Select(x => x.MapTo<ScheduleSlot>());
+                return eventMapped;
+            }));
         }
         catch (Exception ex)
         {
@@ -68,7 +88,11 @@ public class EventService(IEventRepository eventRepository) : IEventService
             var entity = await _eventRepository.GetAsync(findBy: x => x.Id == id);
             if (entity is null) return ServiceResult<Event>.BadRequest("Event not found");
 
-            return ServiceResult<Event>.Ok(entity.MapTo<Event>());
+            var eventMapped = entity.MapTo<Event>();
+            if(entity.Schedule is not null && entity.Schedule.ScheduleSlots is not null && eventMapped.Schedule is not null)
+                eventMapped.Schedule.ScheduleSlots = entity.Schedule.ScheduleSlots.Select(x => x.MapTo<ScheduleSlot>());
+
+            return ServiceResult<Event>.Ok(eventMapped);
         }
         catch (Exception ex)
         {
@@ -77,32 +101,38 @@ public class EventService(IEventRepository eventRepository) : IEventService
         }
     }
 
-    public async Task<ServiceResult<bool>> UpdateAsync(int id, EventForm form)
+    public async Task<ServiceResult<Event>> UpdateAsync(int id, EventForm form)
     {
         try
         {
             var entity = await _eventRepository.GetAsync(findBy: x => x.Id == id);
-            if (entity is null) return ServiceResult<bool>.Conflict("Event not found");
-
+            if (entity is null) return ServiceResult<Event>.BadRequest("Event not found");
             entity.Name = form.Name;
             entity.Description = form.Description;
-            entity.Location = form.Location;
-            entity.Price = form.Price;
             entity.StartTime = form.StartTime;
-            entity.EndTime = form.EndTime;
-            entity.TotalTickets = form.TotalTickets;
-            entity.CategoryId = form.CategoryId;
-            entity.ScheduleId = form.ScheduleId;
+            entity.EndTime = form.EndTime;  
+            entity.Date = form.Date;
+            entity.Price = form.Price;
+            entity.Location = form.Location;
+            if(form.ImageFile != null)
+            {
+                entity.ImageUrl = await _fileService.UploadFileAsync(form.ImageFile);
+            }
+            if(form.CategoryId != 0)
+            {
+                var category = await _categoryRepository.GetAsync(findBy: x => x.Id == form.CategoryId);
+                if(category is null) return ServiceResult<Event>.BadRequest("category not found");
+                entity.Category = category; 
+            }
+            var updatedEntity = await _eventRepository.UpdateAsync(entity);
+            if (updatedEntity is null) return ServiceResult<Event>.Error("Failed to update event");
 
-            bool result = await _eventRepository.UpdateAsync(entity);
-            if (result == false) ServiceResult<bool>.Error("Failed to update event");
-
-            return ServiceResult<bool>.Ok();
+            return ServiceResult<Event>.Ok(updatedEntity.MapTo<Event>());
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex.Message);
-            return ServiceResult<bool>.Error("Failed to update event");
+            return ServiceResult<Event>.Error("Failed to update event");
         }
     }
 }

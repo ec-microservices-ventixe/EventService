@@ -21,7 +21,7 @@ public class Event
 
     public decimal Price { get; set; }
 
-    public Category? category { get; set; }
+    public Category? Category { get; set; }
 
     public Schedule? Schedule { get; set; }
 }

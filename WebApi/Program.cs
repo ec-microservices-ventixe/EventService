@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using WebApi.Data.Context;
+using WebApi.Data.Interfaces;
+using WebApi.Data.Repositories;
 using WebApi.Interfaces;
 using WebApi.Services;
 
@@ -56,6 +58,14 @@ builder.Services.AddAuthentication(options =>
     });
 
 builder.Services.AddScoped<IFileService, AzureFilesService>();
+builder.Services.AddScoped<IEventRepository, EventRepository>();
+builder.Services.AddScoped<IEventCategoryRepository, EventCategoryRepository>();
+builder.Services.AddScoped<IEventScheduleRepository, EventScheduleRepository>();
+builder.Services.AddScoped<IScheduleSlotRepository, ScheduleSlotRepository>();
+builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IScheduleService, ScheduleService>();
+builder.Services.AddScoped<IScheduleSlotService, ScheduleSlotService>();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
