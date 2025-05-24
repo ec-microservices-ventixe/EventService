@@ -23,5 +23,6 @@ public class Event
 
     public Category? Category { get; set; }
 
-    public Schedule? Schedule { get; set; }
+    public IEnumerable<ScheduleSlot> ScheduleSlots { get; set; } = [];
+    public IEnumerable<Package> Packages { get; set; } = [];
 }

@@ -65,13 +65,13 @@ public class EventService(IEventRepository eventRepository, IFileService fileSer
     {
         try
         {
-            var entities = await _eventRepository.GetAllAsync();
+            var entities = await _eventRepository.GetAllAsync(joins: [c => c.Category, s => s.ScheduleSlots, p => p.EventPackages]);
             return ServiceResult<IEnumerable<Event>>.Ok(entities.Select(x =>
             {
-                var eventMapped = x.MapTo<Event>();
-                if (x.Schedule is not null && x.Schedule.ScheduleSlots is not null && eventMapped.Schedule is not null)
-                    eventMapped.Schedule.ScheduleSlots = x.Schedule.ScheduleSlots.Select(x => x.MapTo<ScheduleSlot>());
-                return eventMapped;
+                var mappedEvents = x.MapTo<Event>();
+                mappedEvents.ScheduleSlots = x.ScheduleSlots.Select(x => x.MapTo<ScheduleSlot>()).ToList();
+                mappedEvents.Packages = x.EventPackages.Select(x => x.MapTo<Package>()).ToList();
+                return mappedEvents;
             }));
         }
         catch (Exception ex)
@@ -85,14 +85,14 @@ public class EventService(IEventRepository eventRepository, IFileService fileSer
     {
         try
         {
-            var entity = await _eventRepository.GetAsync(findBy: x => x.Id == id);
+            var entity = await _eventRepository.GetAsync(findBy: x => x.Id == id, joins: [c => c.Category, s => s.ScheduleSlots, p => p.EventPackages]);
             if (entity is null) return ServiceResult<Event>.BadRequest("Event not found");
 
-            var eventMapped = entity.MapTo<Event>();
-            if(entity.Schedule is not null && entity.Schedule.ScheduleSlots is not null && eventMapped.Schedule is not null)
-                eventMapped.Schedule.ScheduleSlots = entity.Schedule.ScheduleSlots.Select(x => x.MapTo<ScheduleSlot>());
+            var mappedEvent = entity.MapTo<Event>();
+            mappedEvent.ScheduleSlots = entity.ScheduleSlots.Select(x => x.MapTo<ScheduleSlot>()).ToList();
+            mappedEvent.Packages = entity.EventPackages.Select(x => x.MapTo<Package>()).ToList();
 
-            return ServiceResult<Event>.Ok(eventMapped);
+            return ServiceResult<Event>.Ok(mappedEvent);
         }
         catch (Exception ex)
         {

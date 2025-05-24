@@ -1,23 +1,24 @@
 ﻿using System.Diagnostics;
 using WebApi.Data.Entities;
 using WebApi.Data.Interfaces;
+using WebApi.Data.Repositories;
 using WebApi.Extensions;
 using WebApi.Interfaces;
 using WebApi.Models;
-
 namespace WebApi.Services;
 
-public class ScheduleSlotService(IScheduleSlotRepository scheduleSlotRepository, IEventScheduleRepository scheduleRepository) : IScheduleSlotService
+public class ScheduleSlotService(IScheduleSlotRepository scheduleSlotRepository, IEventRepository eventRepository) : IScheduleSlotService
 {
     private readonly IScheduleSlotRepository _scheduleSlotRepository = scheduleSlotRepository;
-    private readonly IEventScheduleRepository _scheduleRepository = scheduleRepository;
+    private readonly IEventRepository _eventRepository = eventRepository;
 
     public async Task<ServiceResult<ScheduleSlot>> CreateAsync(ScheduleSlotForm form)
     {
         try
         {
-            var scheduleEntity = await _scheduleRepository.GetAsync(findBy: x => x.Id == form.ScheduleId);
-            if (scheduleEntity is null) return ServiceResult<ScheduleSlot>.BadRequest("Schedule not found");
+            var scheduleEntity = await _eventRepository.GetAsync(findBy: x => x.Id == form.EventId);
+            if (scheduleEntity is null) return ServiceResult<ScheduleSlot>.BadRequest("Event not found");
+
             var createdEntity = await _scheduleSlotRepository.CreateAsync(form.MapTo<ScheduleSlotEntity>());
             if (createdEntity is null) return ServiceResult<ScheduleSlot>.Error("Failed to create slot");
 
@@ -89,6 +90,7 @@ public class ScheduleSlotService(IScheduleSlotRepository scheduleSlotRepository,
         {
             var exisitingEntity = await _scheduleSlotRepository.GetAsync(findBy: x => x.Id == id);
             if (exisitingEntity is null) return ServiceResult<ScheduleSlot>.BadRequest("Schedule slot not found");
+
             exisitingEntity.Name = form.Name;
             exisitingEntity.StartTime = form.StartTime;
             exisitingEntity.StartTime = form.StartTime;

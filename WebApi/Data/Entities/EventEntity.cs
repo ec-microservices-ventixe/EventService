@@ -35,13 +35,11 @@ public class EventEntity
     [Column(TypeName = "money")]
     public decimal Price { get; set; }
 
-    public int? ScheduleId { get; set; }
+    public ICollection<ScheduleSlotEntity> ScheduleSlots { get; set; } = [];
 
-    public EventScheduleEntity? Schedule { get; set; }
+    public ICollection<EventPackageEntity> EventPackages { get; set; } = [];
 
     public int? CategoryId { get; set; }
 
     public EventCategoryEntity? Category { get; set; } 
-
-    
 }

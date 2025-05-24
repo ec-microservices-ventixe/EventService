@@ -22,7 +22,5 @@ public class EventForm
 
     public decimal Price { get; set; }
 
-    public int CategoryId { get; set; } 
-
-    public int ScheduleId { get; set; }
+    public int CategoryId { get; set; }
 }

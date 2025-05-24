@@ -17,7 +17,7 @@ public class ScheduleSlotEntity
 
     public TimeOnly EndTime { get; set; }
 
-    public int ScheduleId { get; set; }
+    public int EventId { get; set; }
 
-    public EventScheduleEntity Schedule { get; set; } = null!;
+    public EventEntity Event { get; set; } = null!;
 }

@@ -2,7 +2,7 @@
 
 public class ScheduleSlotForm
 {
-    public int ScheduleId { get; set; }
+    public int EventId { get; set; }
     public string Name { get; set; } = null!;
 
     public TimeOnly StartTime { get; set; }

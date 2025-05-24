@@ -4,7 +4,7 @@ using WebApi.Data.Interfaces;
 
 namespace WebApi.Data.Repositories;
 
-public class EventScheduleRepository(ApplicationDbContext context) : Repository<EventScheduleEntity>(context), IEventScheduleRepository
+public class EventPackageRepository(ApplicationDbContext context) : Repository<EventPackageEntity>(context), IEventPackageRepository
 {
     private readonly ApplicationDbContext _context = context;
 }
