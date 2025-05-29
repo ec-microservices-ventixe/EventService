@@ -1,4 +1,7 @@
-﻿using System.Diagnostics;
+﻿using Grpc.Core;
+using Grpc.Net.Client;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using WebApi.Data.Entities;
 using WebApi.Data.Interfaces;
 using WebApi.Extensions;
@@ -7,11 +10,12 @@ using WebApi.Models;
 
 namespace WebApi.Services;
 
-public class EventService(IEventRepository eventRepository, IFileService fileService, IEventCategoryRepository categoryRepository) : IEventService
+public class EventService(IEventRepository eventRepository, IFileService fileService, IEventCategoryRepository categoryRepository, EventInfoGrpcService eventInfoGrpcService) : IEventService
 {
     private readonly IEventRepository _eventRepository = eventRepository;
     private readonly IFileService _fileService = fileService;
     private readonly IEventCategoryRepository _categoryRepository = categoryRepository;
+    private readonly EventInfoGrpcService _eventInfoGrpcService = eventInfoGrpcService; 
     public async Task<ServiceResult<Event>> CreateAsync(EventForm form)
     {
         try
@@ -30,14 +34,25 @@ public class EventService(IEventRepository eventRepository, IFileService fileSer
                 mappedForm.Category = category;
             }
 
+            await _eventRepository.BeginTransactionAsync();
+
             var createdEntity = await _eventRepository.CreateAsync(mappedForm);
             if (createdEntity is null) return ServiceResult<Event>.Error("Failed to create event");
 
+            var grpcResult = await _eventInfoGrpcService.UpdateEventInfoAsync(createdEntity.Id, createdEntity.TotalTickets);
+            if (grpcResult.Success == false)
+            {
+                await _eventRepository.RollbackTransactionAsync();
+                return ServiceResult<Event>.Error("Failed to create event");
+            }
+            await _eventRepository.CommitTransactionAsync();
             return ServiceResult<Event>.Ok(createdEntity.MapTo<Event>());
 
         } catch (Exception ex)
         {
             Debug.WriteLine(ex.Message);
+            await _eventRepository.RollbackTransactionAsync();
+
             return ServiceResult<Event>.Error("Failed to create event");
         }
     }
@@ -49,14 +64,23 @@ public class EventService(IEventRepository eventRepository, IFileService fileSer
             var entity = await _eventRepository.GetAsync(findBy: x => x.Id == id);
             if (entity is null) return ServiceResult<bool>.BadRequest("Event not found");
 
+            await _eventRepository.BeginTransactionAsync();
             bool result = await _eventRepository.DeleteAsync(entity);
             if (result == false) ServiceResult<bool>.Error("Failed to delete event");
 
+            var grpcResult = await _eventInfoGrpcService.DeleteEventInfoAsync(id);
+            if (grpcResult.Success == false)
+            {
+                await _eventRepository.RollbackTransactionAsync();
+                return ServiceResult<bool>.Error("Failed to delete event");
+            }
+            await _eventRepository.CommitTransactionAsync();
             return ServiceResult<bool>.NoContent();
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex.Message);
+            await _eventRepository.RollbackTransactionAsync();
             return ServiceResult<bool>.Error("Failed to delete event");
         }
     }
@@ -112,7 +136,6 @@ public class EventService(IEventRepository eventRepository, IFileService fileSer
             entity.StartTime = form.StartTime;
             entity.EndTime = form.EndTime;  
             entity.Date = form.Date;
-            entity.Price = form.Price;
             entity.Location = form.Location;
             if(form.ImageFile != null)
             {
@@ -124,14 +147,24 @@ public class EventService(IEventRepository eventRepository, IFileService fileSer
                 if(category is null) return ServiceResult<Event>.BadRequest("category not found");
                 entity.Category = category; 
             }
+            await _eventRepository.BeginTransactionAsync();
+
             var updatedEntity = await _eventRepository.UpdateAsync(entity);
             if (updatedEntity is null) return ServiceResult<Event>.Error("Failed to update event");
 
+            var grpcResult = await _eventInfoGrpcService.UpdateEventInfoAsync(updatedEntity.Id, updatedEntity.TotalTickets);
+            if (grpcResult.Success == false)
+            {
+                await _eventRepository.RollbackTransactionAsync();
+                return ServiceResult<Event>.Error("Failed to update event");
+            }
+            await _eventRepository.CommitTransactionAsync();
             return ServiceResult<Event>.Ok(updatedEntity.MapTo<Event>());
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex.Message);
+            await _eventRepository.RollbackTransactionAsync();
             return ServiceResult<Event>.Error("Failed to update event");
         }
     }

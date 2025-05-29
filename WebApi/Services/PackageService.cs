@@ -94,7 +94,6 @@ public class PackageService(IEventPackageRepository eventPackageRepository, IEve
 
             exisitingEntity.Name = form.Name;
             exisitingEntity.Benefits = form.Benefits;
-            exisitingEntity.NumberOfTickets = form.NumberOfTickets;
             exisitingEntity.ExtraFeeInProcent = form.ExtraFeeInProcent;
             exisitingEntity.IsSeating = form.IsSeating;
 

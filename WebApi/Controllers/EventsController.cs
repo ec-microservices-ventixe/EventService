@@ -78,7 +78,7 @@ public class EventsController(IEventService eventService) : Controller
         {
             var result = await _eventService.DeleteAsync(id);
             if (result.Success == false) return StatusCode(result.StatusCode, result.ErrorMessage);
-            return StatusCode(result.StatusCode, result.Data);
+            return NoContent();
         }
         catch (Exception ex)
         {

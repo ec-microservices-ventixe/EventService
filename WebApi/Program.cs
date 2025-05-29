@@ -67,6 +67,8 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IScheduleSlotService, ScheduleSlotService>();
 builder.Services.AddScoped<IPackageService, PackageService>();
 
+builder.Services.AddScoped<EventInfoGrpcService>();
+
 builder.Services.AddScoped<IFileService, AzureFilesService>();
 
 builder.Services.AddControllers();

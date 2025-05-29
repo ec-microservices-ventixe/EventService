@@ -14,6 +14,4 @@ public class Package
     [Required]
     public float ExtraFeeInProcent { get; set; }
 
-    [Required]
-    public int NumberOfTickets { get; set; }
 }

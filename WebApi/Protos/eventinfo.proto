@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option  csharp_namespace = "WebApi";
+
+package eventInfo;
+
+service EventInfoManager {
+    rpc UpdateEventInfo (EventInfoUpdateReq) returns (EventInfoRes);
+    rpc DeleteEventInfo (EventInfoDeleteReq) returns (EventInfoRes);
+}
+
+message EventInfoUpdateReq {
+    int32  EventId = 1;
+    int32  TotalTickets = 2; 
+}
+
+message EventInfoDeleteReq {
+    int32  EventId = 1;
+}
+
+message EventInfoRes {
+    bool success = 1;
+    string message = 2;
+}

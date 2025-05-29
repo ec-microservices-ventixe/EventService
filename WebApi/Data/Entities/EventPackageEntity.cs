@@ -21,9 +21,6 @@ public class EventPackageEntity
     [Required]
     public float ExtraFeeInProcent { get; set; }
 
-    [Required]
-    public int NumberOfTickets { get; set; }
-
     public int EventId { get; set; }
 
     public EventEntity Event { get; set; } = null!;
