@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WebApi.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -39,7 +39,6 @@ namespace WebApi.Migrations
                     EndTime = table.Column<TimeOnly>(type: "time", nullable: false),
                     TotalTickets = table.Column<int>(type: "int", nullable: false),
                     Price = table.Column<decimal>(type: "money", nullable: false),
-                    ScheduleId = table.Column<int>(type: "int", nullable: true),
                     CategoryId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
@@ -54,18 +53,22 @@ namespace WebApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "EventSchedules",
+                name: "EventPackages",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "varchar(50)", nullable: false),
+                    IsSeating = table.Column<bool>(type: "bit", nullable: true),
+                    Benefits = table.Column<string>(type: "varchar(120)", nullable: false),
+                    ExtraFeeInProcent = table.Column<float>(type: "real", nullable: false),
                     EventId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_EventSchedules", x => x.Id);
+                    table.PrimaryKey("PK_EventPackages", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_EventSchedules_Events_EventId",
+                        name: "FK_EventPackages_Events_EventId",
                         column: x => x.EventId,
                         principalTable: "Events",
                         principalColumn: "Id",
@@ -81,18 +84,23 @@ namespace WebApi.Migrations
                     Name = table.Column<string>(type: "varchar(100)", nullable: false),
                     StartTime = table.Column<TimeOnly>(type: "time", nullable: false),
                     EndTime = table.Column<TimeOnly>(type: "time", nullable: false),
-                    ScheduleId = table.Column<int>(type: "int", nullable: false)
+                    EventId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_ScheduleSlots", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ScheduleSlots_EventSchedules_ScheduleId",
-                        column: x => x.ScheduleId,
-                        principalTable: "EventSchedules",
+                        name: "FK_ScheduleSlots_Events_EventId",
+                        column: x => x.EventId,
+                        principalTable: "Events",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EventPackages_EventId",
+                table: "EventPackages",
+                column: "EventId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Events_CategoryId",
@@ -100,25 +108,19 @@ namespace WebApi.Migrations
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_EventSchedules_EventId",
-                table: "EventSchedules",
-                column: "EventId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ScheduleSlots_ScheduleId",
+                name: "IX_ScheduleSlots_EventId",
                 table: "ScheduleSlots",
-                column: "ScheduleId");
+                column: "EventId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ScheduleSlots");
+                name: "EventPackages");
 
             migrationBuilder.DropTable(
-                name: "EventSchedules");
+                name: "ScheduleSlots");
 
             migrationBuilder.DropTable(
                 name: "Events");

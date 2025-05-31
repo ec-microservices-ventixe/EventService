@@ -12,8 +12,8 @@ using WebApi.Data.Context;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250522171045_FixForeignKeyd")]
-    partial class FixForeignKeyd
+    [Migration("20250529153442_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -50,7 +50,7 @@ namespace WebApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CategoryId")
+                    b.Property<int?>("CategoryId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Date")
@@ -62,9 +62,6 @@ namespace WebApi.Migrations
 
                     b.Property<TimeOnly>("EndTime")
                         .HasColumnType("time");
-
-                    b.Property<int?>("EventCategoryEntityId")
-                        .HasColumnType("int");
 
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
@@ -78,10 +75,7 @@ namespace WebApi.Migrations
                         .HasColumnType("varchar(60)");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("ScheduleId")
-                        .HasColumnType("int");
+                        .HasColumnType("money");
 
                     b.Property<TimeOnly>("StartTime")
                         .HasColumnType("time");
@@ -93,12 +87,10 @@ namespace WebApi.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("EventCategoryEntityId");
-
                     b.ToTable("Events");
                 });
 
-            modelBuilder.Entity("WebApi.Data.Entities.EventScheduleEntity", b =>
+            modelBuilder.Entity("WebApi.Data.Entities.EventPackageEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -106,15 +98,28 @@ namespace WebApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("Benefits")
+                        .IsRequired()
+                        .HasColumnType("varchar(120)");
+
                     b.Property<int>("EventId")
                         .HasColumnType("int");
 
+                    b.Property<float>("ExtraFeeInProcent")
+                        .HasColumnType("real");
+
+                    b.Property<bool?>("IsSeating")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("varchar(50)");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("EventId")
-                        .IsUnique();
+                    b.HasIndex("EventId");
 
-                    b.ToTable("EventSchedules");
+                    b.ToTable("EventPackages");
                 });
 
             modelBuilder.Entity("WebApi.Data.Entities.ScheduleSlotEntity", b =>
@@ -128,19 +133,19 @@ namespace WebApi.Migrations
                     b.Property<TimeOnly>("EndTime")
                         .HasColumnType("time");
 
+                    b.Property<int>("EventId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("varchar(100)");
-
-                    b.Property<int>("ScheduleId")
-                        .HasColumnType("int");
 
                     b.Property<TimeOnly>("StartTime")
                         .HasColumnType("time");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ScheduleId");
+                    b.HasIndex("EventId");
 
                     b.ToTable("ScheduleSlots");
                 });
@@ -148,23 +153,18 @@ namespace WebApi.Migrations
             modelBuilder.Entity("WebApi.Data.Entities.EventEntity", b =>
                 {
                     b.HasOne("WebApi.Data.Entities.EventCategoryEntity", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("WebApi.Data.Entities.EventCategoryEntity", null)
                         .WithMany("Events")
-                        .HasForeignKey("EventCategoryEntityId");
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("WebApi.Data.Entities.EventScheduleEntity", b =>
+            modelBuilder.Entity("WebApi.Data.Entities.EventPackageEntity", b =>
                 {
                     b.HasOne("WebApi.Data.Entities.EventEntity", "Event")
-                        .WithOne("Schedule")
-                        .HasForeignKey("WebApi.Data.Entities.EventScheduleEntity", "EventId")
+                        .WithMany("EventPackages")
+                        .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -173,13 +173,13 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Data.Entities.ScheduleSlotEntity", b =>
                 {
-                    b.HasOne("WebApi.Data.Entities.EventScheduleEntity", "Schedule")
+                    b.HasOne("WebApi.Data.Entities.EventEntity", "Event")
                         .WithMany("ScheduleSlots")
-                        .HasForeignKey("ScheduleId")
+                        .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Schedule");
+                    b.Navigation("Event");
                 });
 
             modelBuilder.Entity("WebApi.Data.Entities.EventCategoryEntity", b =>
@@ -189,11 +189,8 @@ namespace WebApi.Migrations
 
             modelBuilder.Entity("WebApi.Data.Entities.EventEntity", b =>
                 {
-                    b.Navigation("Schedule");
-                });
+                    b.Navigation("EventPackages");
 
-            modelBuilder.Entity("WebApi.Data.Entities.EventScheduleEntity", b =>
-                {
                     b.Navigation("ScheduleSlots");
                 });
 #pragma warning restore 612, 618

@@ -12,7 +12,7 @@ public class EventsController(IEventService eventService) : Controller
    private readonly IEventService _eventService = eventService;
 
     [HttpPost]
-    public async Task<ActionResult> Create([FromBody] EventForm form)
+    public async Task<ActionResult> Create([FromForm] EventForm form)
     {
         if (!ModelState.IsValid) return BadRequest(form);
         try
@@ -57,7 +57,7 @@ public class EventsController(IEventService eventService) : Controller
         }
     }
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(int id, [FromBody] EventForm form)
+    public async Task<ActionResult> Update(int id, [FromForm] EventForm form)
     {
         try
         {

@@ -8,7 +8,6 @@ public class EventInfoGrpcService
 
     public EventInfoGrpcService(IConfiguration config)
     {
-        // Optional: get URL from config
         var grpcUrl = config["Grpc:EventInfoUrl"] ?? "https://localhost:7018";
 
         var channel = GrpcChannel.ForAddress(grpcUrl);
@@ -23,7 +22,8 @@ public class EventInfoGrpcService
             TotalTickets = totalTickets
         };
 
-        return await _client.UpdateEventInfoAsync(request);
+        var result = await _client.UpdateEventInfoAsync(request);
+        return result;
     }
 
     public async Task<EventInfoRes> DeleteEventInfoAsync(int eventId)
