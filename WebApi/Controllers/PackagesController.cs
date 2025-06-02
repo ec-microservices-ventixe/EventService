@@ -6,7 +6,7 @@ using WebApi.Models;
 namespace WebApi.Controllers;
 
 [ApiController]
-[Route(nameof(Controller))]
+[Route("packages")]
 public class PackagesController(IPackageService packageService) : Controller
 {
     private readonly IPackageService _packageService = packageService;
