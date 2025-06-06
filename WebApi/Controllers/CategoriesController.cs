@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using WebApi.Interfaces;
 using WebApi.Models;
@@ -8,6 +9,7 @@ namespace WebApi.Controllers;
 
 [ApiController]
 [Route("categories")]
+[Authorize(Roles ="Admin")]
 public class CategoriesController(ICategoryService categoryService) : Controller
 {
     private readonly ICategoryService _categoryService = categoryService;
@@ -28,6 +30,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
         }
     }
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult> Get()
     {
         try
@@ -43,6 +46,7 @@ public class CategoriesController(ICategoryService categoryService) : Controller
         }
     }
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<ActionResult> Get(int id)
     {
         try

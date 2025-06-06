@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using WebApi.Interfaces;
 using WebApi.Models;
@@ -7,6 +8,7 @@ namespace WebApi.Controllers;
 
 [ApiController]
 [Route("packages")]
+[Authorize(Roles = "Admins")]
 public class PackagesController(IPackageService packageService) : Controller
 {
     private readonly IPackageService _packageService = packageService;
@@ -29,6 +31,7 @@ public class PackagesController(IPackageService packageService) : Controller
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> Get()
     {
         try
@@ -46,6 +49,7 @@ public class PackagesController(IPackageService packageService) : Controller
     }
 
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<IActionResult> Get(int id)
     {
         try

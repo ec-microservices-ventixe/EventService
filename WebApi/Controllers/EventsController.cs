@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using WebApi.Interfaces;
 using WebApi.Models;
@@ -7,6 +8,7 @@ namespace WebApi.Controllers;
 
 [ApiController]
 [Route("events")]
+[Authorize(Roles = "Admin")]
 public class EventsController(IEventService eventService) : Controller
 {
    private readonly IEventService _eventService = eventService;
@@ -42,6 +44,7 @@ public class EventsController(IEventService eventService) : Controller
         }
     }
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<ActionResult> Get(int id)
     {
         try
@@ -57,6 +60,7 @@ public class EventsController(IEventService eventService) : Controller
         }
     }
     [HttpPut("{id}")]
+    [AllowAnonymous]
     public async Task<ActionResult> Update(int id, [FromForm] EventForm form)
     {
         try

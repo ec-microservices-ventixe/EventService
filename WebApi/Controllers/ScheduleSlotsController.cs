@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using WebApi.Interfaces;
 using WebApi.Models;
@@ -7,6 +8,7 @@ namespace WebApi.Controllers;
 
 [ApiController]
 [Route("schedule-slots")]
+[Authorize(Roles = "Admin")]
 public class ScheduleSlotsController(IScheduleSlotService scheduleSlotService) : Controller
 {
     private readonly IScheduleSlotService _scheduleSlotService = scheduleSlotService;
@@ -27,6 +29,7 @@ public class ScheduleSlotsController(IScheduleSlotService scheduleSlotService) :
         }
     }
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult> Get()
     {
         try
@@ -42,6 +45,7 @@ public class ScheduleSlotsController(IScheduleSlotService scheduleSlotService) :
         }
     }
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<ActionResult> Get([FromQuery] int id)
     {
         try
