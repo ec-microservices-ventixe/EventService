@@ -8,7 +8,7 @@ namespace WebApi.Controllers;
 
 [ApiController]
 [Route("packages")]
-[Authorize(Roles = "Admins")]
+[Authorize(Roles = "Admin")]
 public class PackagesController(IPackageService packageService) : Controller
 {
     private readonly IPackageService _packageService = packageService;
