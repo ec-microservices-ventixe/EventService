@@ -29,6 +29,7 @@ public class EventsController(IEventService eventService) : Controller
         }
     }
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult> Get()
     {
         try
