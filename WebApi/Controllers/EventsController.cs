@@ -61,7 +61,6 @@ public class EventsController(IEventService eventService) : Controller
         }
     }
     [HttpPut("{id}")]
-    [AllowAnonymous]
     public async Task<ActionResult> Update(int id, [FromForm] EventForm form)
     {
         try
