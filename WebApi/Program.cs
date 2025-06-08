@@ -37,8 +37,8 @@ builder.Services.AddAuthentication(options =>
             ValidAudience = builder.Configuration["Jwt:Audience"],
             ValidateIssuerSigningKey = true,
             ValidateLifetime = true,
-            ValidateIssuer = false,
-            ValidateAudience = false,
+            ValidateIssuer = true,
+            ValidateAudience = true,
             IssuerSigningKeyResolver = (token, SecurityKey, kid, validationParameters) =>
             {
                 HttpClient httpClient = new();
